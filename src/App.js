@@ -8,6 +8,7 @@ import {
   } from 'react-router-dom';
 import './App.css';
 import StudentList from './components/StudentList';
+import NoMatch from './components/NoMatch';
 
 class App extends Component {
   state = {
@@ -21,9 +22,14 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
-        <StudentList students={this.state.students}/>
-      </div>
+      <Router>
+        <div className="App">
+          <Switch>
+            <Route exact path='/' component={() => <StudentList students={this.state.students}/>}/>
+            <Route component={NoMatch}/>
+          </Switch>
+        </div>
+      </Router>
     );
   }
 }
