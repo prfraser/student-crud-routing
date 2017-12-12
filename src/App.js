@@ -1,14 +1,21 @@
 import React, { Component } from 'react';
 import { 
-  BrowserRouter as Router,
   Route,
   Link,
   Redirect,
-  Switch
+  Switch,
+  withRouter
   } from 'react-router-dom';
 import './App.css';
 import StudentList from './components/StudentList';
 import NoMatch from './components/NoMatch';
+import ListItem from './components/ListItem';
+import NewStudent from './components/NewStudent';
+
+const currentId = 4
+const getId = () => {
+  return currentId + 1
+}
 
 class App extends Component {
   state = {
@@ -20,18 +27,64 @@ class App extends Component {
     ]
   }
 
+  findStudent = (id) => {
+    return this.state.students.find((student) => {
+      return student.id === parseInt(id, 10)
+    })
+  }
+
+  handleDelete = (id) => {
+    this.setState({
+      students: this.state.students.filter(student => {
+        return student.id !== id 
+      })
+    }, () => {
+      this.props.history.push('/')
+    })
+  }
+
+  handleSubmit = (event) => {
+    event.preventDefault()
+    const form = event.target
+    const elements = form.elements
+    const newStudent = { 
+      id: getId(), 
+      name: elements.nameField.value, 
+      profilePhoto: elements.imageField.value, 
+      bio: elements.bioField.value
+    }
+    this.setState({
+      students: [newStudent, ...this.state.students]
+    }, () => {
+      this.props.history.push('/')
+    })
+  }
+
   render() {
     return (
-      <Router>
-        <div className="App">
-          <Switch>
-            <Route exact path='/' component={() => <StudentList students={this.state.students}/>}/>
-            <Route component={NoMatch}/>
-          </Switch>
-        </div>
-      </Router>
+      <div className="App">
+        <Switch>
+          <Route 
+            exact path='/' 
+            component={() => <StudentList 
+                              handleDelete={this.handleDelete}
+                              students={this.state.students}/> }
+            />
+          <Route 
+            exact path='/students/:id' 
+            component={({match}) => <ListItem 
+                                      handleDelete={this.handleDelete} 
+                                      {...this.findStudent(match.params.id)}/> }
+            />
+          <Route 
+            exact path='/student/new' 
+            component={() => <NewStudent handleSubmit={this.handleSubmit} /> }
+            />
+          <Route component={NoMatch}/>
+        </Switch>
+      </div>
     );
   }
 }
 
-export default App;
+export default withRouter(App);
